@@ -23,7 +23,20 @@ class QuizGame:
         for number, quiz in enumerate(self.quizzes, start=1):
             print(f"\n[문제 {number}]")
             quiz.display()
+    def read_number(self, prompt, minimum, maximum):
+        while True:
+            text = input(prompt).strip()
 
+            try:
+                number = int(text)
+            except ValueError:
+                print("숫자를 입력해 주세요.")
+                continue
+
+            if minimum <= number <= maximum:
+                return number
+
+            print(f"{minimum}~{maximum} 사이의 숫자를 입력해 주세요.")
     def run(self):
         while True:
             print("\n===== 카페 고객 응대 퀴즈 =====")
@@ -33,17 +46,17 @@ class QuizGame:
             print("4. 점수 확인")
             print("5. 종료")
 
-            choice = input("선택: ").strip()
+            choice = self.read_number("선택: ", 1, 5)
 
-            if choice == "1":
+            if choice == 1:
                 print("퀴즈 풀기 기능을 준비 중입니다.")
-            elif choice == "2":
+            elif choice == 2:
                 print("퀴즈 추가 기능을 준비 중입니다.")
-            elif choice == "3":
+            elif choice == 3:
                 self.show_quizzes()
-            elif choice == "4":
+            elif choice == 4:
                 print("점수 확인 기능을 준비 중입니다.")
-            elif choice == "5":
+            elif choice == 5:
                 print("퀴즈 게임을 종료합니다.")
                 break
             else:
