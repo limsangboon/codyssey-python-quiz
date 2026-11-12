@@ -10,7 +10,8 @@ class Quiz:
         for number, choice in enumerate(self.choices, start=1):
             print(f"{number}. {choice}")
 
-
+    def check_answer(self, user_answer):
+        return user_answer == self.answer
 quiz = Quiz(
     "고객이 주문한 음료와 다른 음료를 받았다고 하면 어떻게 할까요?",
     [
@@ -23,3 +24,5 @@ quiz = Quiz(
 )
 
 quiz.display()
+print(quiz.check_answer(2))
+print(quiz.check_answer(1))
