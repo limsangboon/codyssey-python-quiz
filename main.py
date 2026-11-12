@@ -37,6 +37,30 @@ class QuizGame:
                 return number
 
             print(f"{minimum}~{maximum} 사이의 숫자를 입력해 주세요.")
+    def play(self):
+        if not self.quizzes:
+            print("등록된 퀴즈가 없습니다.")
+            return
+
+        correct_count = 0
+
+        for number, quiz in enumerate(self.quizzes, start=1):
+            print(f"\n[문제 {number}]")
+            quiz.display()
+
+            answer = self.read_number("정답 입력 (1~4): ", 1, 4)
+
+            if quiz.check_answer(answer):
+                print("정답입니다!")
+                correct_count += 1
+            else:
+                print(f"오답입니다. 정답은 {quiz.answer}번입니다.")
+
+        score = round(correct_count / len(self.quizzes) * 100)
+        print(
+            f"\n결과: {len(self.quizzes)}문제 중 "
+            f"{correct_count}문제 정답! ({score}점)"
+        )
     def run(self):
         while True:
             print("\n===== 카페 고객 응대 퀴즈 =====")
@@ -49,7 +73,7 @@ class QuizGame:
             choice = self.read_number("선택: ", 1, 5)
 
             if choice == 1:
-                print("퀴즈 풀기 기능을 준비 중입니다.")
+                self.play()
             elif choice == 2:
                 print("퀴즈 추가 기능을 준비 중입니다.")
             elif choice == 3:
