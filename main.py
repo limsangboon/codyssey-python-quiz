@@ -12,6 +12,8 @@ class Quiz:
 
     def check_answer(self, user_answer):
         return user_answer == self.answer
+
+
 class QuizGame:
     def __init__(self, quizzes):
         self.quizzes = quizzes
@@ -20,7 +22,34 @@ class QuizGame:
     def show_quizzes(self):
         for number, quiz in enumerate(self.quizzes, start=1):
             print(f"\n[문제 {number}]")
-            quiz.display()    
+            quiz.display()
+
+    def run(self):
+        while True:
+            print("\n===== 카페 고객 응대 퀴즈 =====")
+            print("1. 퀴즈 풀기")
+            print("2. 퀴즈 추가")
+            print("3. 퀴즈 목록")
+            print("4. 점수 확인")
+            print("5. 종료")
+
+            choice = input("선택: ").strip()
+
+            if choice == "1":
+                print("퀴즈 풀기 기능을 준비 중입니다.")
+            elif choice == "2":
+                print("퀴즈 추가 기능을 준비 중입니다.")
+            elif choice == "3":
+                self.show_quizzes()
+            elif choice == "4":
+                print("점수 확인 기능을 준비 중입니다.")
+            elif choice == "5":
+                print("퀴즈 게임을 종료합니다.")
+                break
+            else:
+                print("1~5 사이의 번호를 입력해 주세요.")
+
+
 quizzes = [
     Quiz(
         "주문과 다른 음료를 받았다는 고객에게 어떻게 응대할까요?",
@@ -75,4 +104,4 @@ quizzes = [
 ]
 
 game = QuizGame(quizzes)
-game.show_quizzes()
+game.run()
