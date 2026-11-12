@@ -12,6 +12,15 @@ class Quiz:
 
     def check_answer(self, user_answer):
         return user_answer == self.answer
+class QuizGame:
+    def __init__(self, quizzes):
+        self.quizzes = quizzes
+        self.best_score = 0
+
+    def show_quizzes(self):
+        for number, quiz in enumerate(self.quizzes, start=1):
+            print(f"\n[문제 {number}]")
+            quiz.display()    
 quizzes = [
     Quiz(
         "주문과 다른 음료를 받았다는 고객에게 어떻게 응대할까요?",
@@ -65,6 +74,5 @@ quizzes = [
     ),
 ]
 
-for number, quiz in enumerate(quizzes, start=1):
-    print(f"\n[문제 {number}]")
-    quiz.display()
+game = QuizGame(quizzes)
+game.show_quizzes()
