@@ -141,3 +141,28 @@ UTF-8 인코딩으로 저장하며, 구조는 다음과 같습니다.
 별도 폴더에 git clone으로 저장소를 복제했습니다.
 복제본에서 README를 수정하고 커밋·업로드한 뒤,
 원래 작업 폴더에서 git pull로 변경 사항을 가져오는 실습입니다.
+
+## 실행 화면
+
+### 메뉴
+![메뉴 화면](docs/screenshots/menu.png)
+
+### 퀴즈 풀기
+![퀴즈 풀이 화면](docs/screenshots/play.png)
+
+### 퀴즈 추가
+![퀴즈 추가 화면](docs/screenshots/add_quiz.png)
+
+### 퀴즈 목록
+![퀴즈 목록 화면](docs/screenshots/list.png)
+
+### 최고 점수
+![최고 점수 화면](docs/screenshots/score.png)
+
+## 개발 환경 및 Git 기록
+
+### 개발 환경
+![개발 환경](docs/screenshots/environment.png)
+
+### Git 커밋과 브랜치 병합 기록
+![Git 기록](docs/screenshots/git-log.png)
