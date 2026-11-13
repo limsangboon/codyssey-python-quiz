@@ -1,3 +1,9 @@
+import json
+from pathlib import Path
+
+STATE_FILE = Path(__file__).resolve().parent / "state.json"
+
+
 class Quiz:
     def __init__(self, question, choices, answer):
         self.question = question
@@ -23,6 +29,7 @@ class QuizGame:
         for number, quiz in enumerate(self.quizzes, start=1):
             print(f"\n[문제 {number}]")
             quiz.display()
+    
     def read_text(self, prompt):
         while True:
             text = input(prompt).strip()
@@ -31,6 +38,7 @@ class QuizGame:
                 return text
 
             print("내용을 입력해 주세요.")
+    
     def read_number(self, prompt, minimum, maximum):
         while True:
             text = input(prompt).strip()
@@ -45,6 +53,7 @@ class QuizGame:
                 return number
 
             print(f"{minimum}~{maximum} 사이의 숫자를 입력해 주세요.")
+    
     def play(self):
         if not self.quizzes:
             print("등록된 퀴즈가 없습니다.")
@@ -73,6 +82,7 @@ class QuizGame:
         if self.best_score is None or score > self.best_score:
             self.best_score = score
             print("새로운 최고 점수입니다!")  
+
     def add_quiz(self):
         print("\n새로운 퀴즈를 추가합니다.")
 
@@ -89,11 +99,35 @@ class QuizGame:
         self.quizzes.append(quiz)
 
         print("퀴즈가 추가되었습니다!")
+
     def show_score(self):
         if self.best_score is None:
             print("아직 퀴즈를 풀지 않았습니다.")
         else:
             print(f"최고 점수: {self.best_score}점")
+
+    def save_state(self):
+        data = {
+            "quizzes": [
+                {
+                    "question": quiz.question,
+                    "choices": quiz.choices,
+                    "answer": quiz.answer,
+                }
+                for quiz in self.quizzes
+            ],
+            "best_score": self.best_score,
+        }
+
+        try:
+            with STATE_FILE.open("w", encoding="utf-8") as file:
+                json.dump(data, file, ensure_ascii=False, indent=4)
+        except OSError as error:
+            print(f"데이터를 저장하지 못했습니다: {error}")
+            return False
+
+        return True
+
     def run(self):
         while True:
             print("\n===== 카페 고객 응대 퀴즈 =====")
@@ -174,4 +208,5 @@ quizzes = [
 ]
 
 game = QuizGame(quizzes)
+game.save_state()
 game.run()
