@@ -145,24 +145,31 @@ UTF-8 인코딩으로 저장하며, 구조는 다음과 같습니다.
 ## 실행 화면
 
 ### 메뉴
+
 ![메뉴 화면](docs/screenshots/menu.png)
 
 ### 퀴즈 풀기
+
 ![퀴즈 풀이 화면](docs/screenshots/play.png)
 
 ### 퀴즈 추가
+
 ![퀴즈 추가 화면](docs/screenshots/add_quiz.png)
 
 ### 퀴즈 목록
+
 ![퀴즈 목록 화면](docs/screenshots/list.png)
 
 ### 최고 점수
+
 ![최고 점수 화면](docs/screenshots/score.png)
 
 ## 개발 환경 및 Git 기록
 
 ### 개발 환경
+
 ![개발 환경](docs/screenshots/environment.png)
 
 ### Git 커밋과 브랜치 병합 기록
+
 ![Git 기록](docs/screenshots/git_log.png)
