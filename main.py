@@ -29,7 +29,7 @@ class QuizGame:
         for number, quiz in enumerate(self.quizzes, start=1):
             print(f"\n[문제 {number}]")
             quiz.display()
-    
+
     def read_text(self, prompt):
         while True:
             text = input(prompt).strip()
@@ -38,7 +38,7 @@ class QuizGame:
                 return text
 
             print("내용을 입력해 주세요.")
-    
+
     def read_number(self, prompt, minimum, maximum):
         while True:
             text = input(prompt).strip()
@@ -53,7 +53,7 @@ class QuizGame:
                 return number
 
             print(f"{minimum}~{maximum} 사이의 숫자를 입력해 주세요.")
-    
+
     def play(self):
         if not self.quizzes:
             print("등록된 퀴즈가 없습니다.")
@@ -81,7 +81,10 @@ class QuizGame:
 
         if self.best_score is None or score > self.best_score:
             self.best_score = score
-            print("새로운 최고 점수입니다!")  
+            print("새로운 최고 점수입니다!")
+
+            if not self.save_state():
+                print("최고 점수를 파일에 저장하지 못했습니다.")
 
     def add_quiz(self):
         print("\n새로운 퀴즈를 추가합니다.")
@@ -98,13 +101,78 @@ class QuizGame:
         quiz = Quiz(question, choices, answer)
         self.quizzes.append(quiz)
 
-        print("퀴즈가 추가되었습니다!")
+        if self.save_state():
+            print("퀴즈가 추가되고 저장되었습니다!")
+        else:
+            print("퀴즈는 추가됐지만 파일 저장에 실패했습니다.")
 
     def show_score(self):
         if self.best_score is None:
             print("아직 퀴즈를 풀지 않았습니다.")
         else:
             print(f"최고 점수: {self.best_score}점")
+
+    def validate_state(self, data):
+        if not isinstance(data, dict):
+            raise ValueError("저장 데이터는 딕셔너리여야 합니다.")
+
+        if "quizzes" not in data or "best_score" not in data:
+            raise ValueError("필수 저장 항목이 없습니다.")
+
+        if not isinstance(data["quizzes"], list):
+            raise ValueError("퀴즈 목록 형식이 올바르지 않습니다.")
+
+        for item in data["quizzes"]:
+            if not isinstance(item, dict):
+                raise ValueError("퀴즈 형식이 올바르지 않습니다.")
+
+            question = item.get("question")
+            choices = item.get("choices")
+            answer = item.get("answer")
+
+            if not isinstance(question, str) or not question.strip():
+                raise ValueError("문제 내용이 비어 있거나 잘못되었습니다.")
+
+            if not isinstance(choices, list) or len(choices) != 4:
+                raise ValueError("선택지는 4개여야 합니다.")
+
+            for choice in choices:
+                if not isinstance(choice, str) or not choice.strip():
+                    raise ValueError("선택지 내용이 잘못되었습니다.")
+
+            if type(answer) is not int or not 1 <= answer <= 4:
+                raise ValueError("정답 번호는 1~4의 정수여야 합니다.")
+
+        best_score = data["best_score"]
+
+        if best_score is not None:
+            if type(best_score) is not int or not 0 <= best_score <= 100:
+                raise ValueError("최고 점수는 0~100의 정수여야 합니다.")
+
+    def load_state(self):
+        try:
+            with STATE_FILE.open("r", encoding="utf-8") as file:
+                data = json.load(file)
+
+            self.validate_state(data)
+
+            loaded_quizzes = [
+                Quiz(item["question"], item["choices"], item["answer"])
+                for item in data["quizzes"]
+            ]
+
+        except FileNotFoundError:
+            print("저장 파일이 없어 기본 퀴즈로 시작합니다.")
+            return
+
+        except (OSError, ValueError, UnicodeError) as error:
+            print(f"저장 데이터를 불러오지 못했습니다: {error}")
+            print("기본 퀴즈로 시작합니다.")
+            return
+
+        self.quizzes = loaded_quizzes
+        self.best_score = data["best_score"]
+        print(f"저장 데이터를 불러왔습니다. (퀴즈 {len(self.quizzes)}개)")
 
     def save_state(self):
         data = {
@@ -150,8 +218,6 @@ class QuizGame:
             elif choice == 5:
                 print("퀴즈 게임을 종료합니다.")
                 break
-            else:
-                print("1~5 사이의 번호를 입력해 주세요.")
 
 
 quizzes = [
@@ -208,5 +274,5 @@ quizzes = [
 ]
 
 game = QuizGame(quizzes)
-game.save_state()
+game.load_state()
 game.run()
