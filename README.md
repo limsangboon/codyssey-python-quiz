@@ -165,4 +165,4 @@ UTF-8 인코딩으로 저장하며, 구조는 다음과 같습니다.
 ![개발 환경](docs/screenshots/environment.png)
 
 ### Git 커밋과 브랜치 병합 기록
-![Git 기록](docs/screenshots/git-log.png)
+![Git 기록](docs/screenshots/git_log.png)
