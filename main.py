@@ -17,7 +17,7 @@ class Quiz:
 class QuizGame:
     def __init__(self, quizzes):
         self.quizzes = quizzes
-        self.best_score = 0
+        self.best_score = None
 
     def show_quizzes(self):
         for number, quiz in enumerate(self.quizzes, start=1):
@@ -69,6 +69,10 @@ class QuizGame:
             f"\n결과: {len(self.quizzes)}문제 중 "
             f"{correct_count}문제 정답! ({score}점)"
         )
+
+        if self.best_score is None or score > self.best_score:
+            self.best_score = score
+            print("새로운 최고 점수입니다!")  
     def add_quiz(self):
         print("\n새로운 퀴즈를 추가합니다.")
 
@@ -85,6 +89,11 @@ class QuizGame:
         self.quizzes.append(quiz)
 
         print("퀴즈가 추가되었습니다!")
+    def show_score(self):
+        if self.best_score is None:
+            print("아직 퀴즈를 풀지 않았습니다.")
+        else:
+            print(f"최고 점수: {self.best_score}점")
     def run(self):
         while True:
             print("\n===== 카페 고객 응대 퀴즈 =====")
@@ -103,7 +112,7 @@ class QuizGame:
             elif choice == 3:
                 self.show_quizzes()
             elif choice == 4:
-                print("점수 확인 기능을 준비 중입니다.")
+                self.show_score()
             elif choice == 5:
                 print("퀴즈 게임을 종료합니다.")
                 break
