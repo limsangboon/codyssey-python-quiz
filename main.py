@@ -274,5 +274,10 @@ quizzes = [
 ]
 
 game = QuizGame(quizzes)
-game.load_state()
-game.run()
+
+try:
+    game.load_state()
+    game.run()
+except (KeyboardInterrupt, EOFError):
+    print("\n입력이 중단되어 게임을 종료합니다.")
+    game.save_state()
