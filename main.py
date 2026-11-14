@@ -1,7 +1,11 @@
 import json
+import os
+import tempfile
 from pathlib import Path
+from uuid import uuid4
 
 STATE_FILE = Path(__file__).resolve().parent / "state.json"
+BACKUP_FILE = STATE_FILE.with_name("state.backup.json")
 
 
 class Quiz:
@@ -155,30 +159,96 @@ class QuizGame:
             if type(best_score) is not int or not 0 <= best_score <= 100:
                 raise ValueError("최고 점수는 0~100의 정수여야 합니다.")
 
+    def read_state_file(self, path):
+        with path.open("r", encoding="utf-8") as file:
+            data = json.load(file)
+
+        self.validate_state(data)
+        return data
+
+    def write_state_file(self, path, data):
+        temporary = None
+
+        try:
+            with tempfile.NamedTemporaryFile(
+                mode="w",
+                encoding="utf-8",
+                dir=path.parent,
+                prefix=path.name + ".",
+                suffix=".tmp",
+                delete=False,
+            ) as file:
+                temporary = Path(file.name)
+                json.dump(data, file, ensure_ascii=False, indent=4)
+                file.flush()
+                os.fsync(file.fileno())
+
+            os.replace(temporary, path)
+
+        finally:
+            if temporary is not None:
+                temporary.unlink(missing_ok=True)
+
+    def preserve_corrupt_file(self):
+        path = STATE_FILE.with_name(
+            f"state.corrupt-{uuid4().hex}.json"
+        )
+        STATE_FILE.rename(path)
+        print(f"손상된 파일을 보존했습니다: {path.name}")
+
     def load_state(self):
         try:
-            with STATE_FILE.open("r", encoding="utf-8") as file:
-                data = json.load(file)
-
-            self.validate_state(data)
-
-            loaded_quizzes = [
-                Quiz(item["question"], item["choices"], item["answer"])
-                for item in data["quizzes"]
-            ]
+            data = self.read_state_file(STATE_FILE)
 
         except FileNotFoundError:
-            print("저장 파일이 없어 기본 퀴즈로 시작합니다.")
+            print("저장 파일이 없습니다. 백업을 확인합니다.")
+            data = self.restore_backup()
+
+        except (ValueError, UnicodeError) as error:
+            print(f"저장 데이터가 손상되었습니다: {error}")
+
+            try:
+                self.preserve_corrupt_file()
+            except OSError as preserve_error:
+                print(f"손상 파일 보존 실패: {preserve_error}")
+
+            data = self.restore_backup()
+
+        except OSError as error:
+            print(f"저장 파일을 읽지 못했습니다: {error}")
+            data = self.restore_backup()
+
+        if data is None:
+            print("사용 가능한 저장 데이터가 없어 기본 퀴즈로 시작합니다.")
             return
+
+        self.quizzes = [
+            Quiz(item["question"], item["choices"], item["answer"])
+            for item in data["quizzes"]
+        ]
+        self.best_score = data["best_score"]
+
+        print(f"저장 데이터를 불러왔습니다. (퀴즈 {len(self.quizzes)}개)")
+
+    def restore_backup(self):
+        try:
+            data = self.read_state_file(BACKUP_FILE)
 
         except (OSError, ValueError, UnicodeError) as error:
-            print(f"저장 데이터를 불러오지 못했습니다: {error}")
-            print("기본 퀴즈로 시작합니다.")
-            return
+            print(f"사용 가능한 백업이 없습니다: {error}")
+            return None
 
-        self.quizzes = loaded_quizzes
-        self.best_score = data["best_score"]
-        print(f"저장 데이터를 불러왔습니다. (퀴즈 {len(self.quizzes)}개)")
+        print("정상 백업 데이터를 불러왔습니다.")
+
+        try:
+            self.write_state_file(STATE_FILE, data)
+            print("백업으로 state.json을 복구했습니다.")
+
+        except OSError as error:
+            print(f"파일 복구 실패: {error}")
+            print("이번 실행은 백업 데이터로 계속합니다.")
+
+        return data
 
     def save_state(self):
         data = {
@@ -194,10 +264,32 @@ class QuizGame:
         }
 
         try:
-            with STATE_FILE.open("w", encoding="utf-8") as file:
-                json.dump(data, file, ensure_ascii=False, indent=4)
-        except OSError as error:
+            self.validate_state(data)
+
+            try:
+                previous = self.read_state_file(STATE_FILE)
+
+            except FileNotFoundError:
+                previous = None
+
+            except (ValueError, UnicodeError):
+                self.preserve_corrupt_file()
+                previous = None
+
+            if previous is not None:
+                self.write_state_file(BACKUP_FILE, previous)
+
+            elif not BACKUP_FILE.exists():
+                self.write_state_file(BACKUP_FILE, data)
+
+            self.write_state_file(STATE_FILE, data)
+
+        except (OSError, ValueError, UnicodeError) as error:
             print(f"데이터를 저장하지 못했습니다: {error}")
+            print(
+                "기존 정상 파일과 백업을 확인하고, "
+                "경로·권한·저장 공간을 점검해 주세요."
+            )
             return False
 
         return True
@@ -279,11 +371,13 @@ quizzes = [
     ),
 ]
 
-game = QuizGame(quizzes)
 
-try:
-    game.load_state()
-    game.run()
-except (KeyboardInterrupt, EOFError):
-    print("\n입력이 중단되어 게임을 종료합니다.")
-    game.save_state()
+if __name__ == "__main__":
+    game = QuizGame(quizzes)
+
+    try:
+        game.load_state()
+        game.run()
+    except (KeyboardInterrupt, EOFError):
+        print("\n입력이 중단되어 게임을 종료합니다.")
+        game.save_state()
